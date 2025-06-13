@@ -1,0 +1,1104 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/869/869869.png">
+
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<title>Urlaubskalender</title>
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css" rel="stylesheet"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
+<style>
+  body {
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0; padding: 1rem;
+    background: #f8f9fa;
+    color: #333;
+    display: flex;
+    justify-content: center;
+    min-height: 100vh;
+    /* Prevent horizontal scrolling on mobile */
+    overflow-x: hidden;
+  }
+  .container {
+    width: 100%;
+    max-width: 1000px;
+    background: white;
+    padding: 1.5rem 2rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgb(0 0 0 / 0.1);
+    box-sizing: border-box;
+  }
+  h1, h3 {
+    color: #007bff;
+    margin-bottom: 0.5rem;
+  }
+
+  /* Hamburger Menu */
+  .hamburger-menu {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    z-index: 1000;
+  }
+  .hamburger-btn {
+    background: #007bff;
+    color: white;
+    border: none;
+    padding: 0.5rem;
+    border-radius: 5px;
+    font-size: 1.2rem;
+    cursor: pointer;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  }
+  .hamburger-btn:hover {
+    background: #0056b3;
+  }
+  .menu-dropdown {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+    display: none;
+    min-width: 250px;
+    padding: 1rem;
+    margin-top: 0.5rem;
+  }
+  .menu-dropdown.show {
+    display: block;
+  }
+  .menu-item {
+    display: block;
+    width: 100%;
+    padding: 0.5rem;
+    margin: 0.25rem 0;
+    border: none;
+    background: none;
+    text-align: left;
+    cursor: pointer;
+    border-radius: 3px;
+    color: #333;
+    text-decoration: none;
+  }
+  .menu-item:hover {
+    background: #f8f9fa;
+  }
+  .menu-item.primary {
+    background: #007bff;
+    color: white;
+  }
+  .menu-item.primary:hover {
+    background: #0056b3;
+  }
+  .menu-item.danger {
+    background: #dc3545;
+    color: white;
+  }
+  .menu-item.danger:hover {
+    background: #b02a37;
+  }
+
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: #444;
+  }
+  .color-box {
+    width: 24px; height: 24px;
+    border-radius: 4px;
+    box-shadow: 0 0 4px rgba(0, 0, 0, 0.1);
+  }
+  #import-section {
+    display: flex;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  #import-section label {
+    font-weight: 600;
+    cursor: pointer;
+  }
+  input[type="file"] {
+    margin-left: 0.4rem;
+    cursor: pointer;
+  }
+  ul {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 1rem 0;
+    max-width: 400px;
+  }
+  ul li {
+    background: #f1f3f5;
+    margin-bottom: 0.5rem;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: 600;
+  }
+  button {
+    padding: 0.3rem 0.8rem;
+    border: none;
+    border-radius: 4px;
+    font-weight: 600;
+    cursor: pointer;
+    user-select: none;
+  }
+  button.delete-btn {
+    background-color: #dc3545;
+    color: white;
+  }
+  button.delete-btn:hover {
+    background-color: #b02a37;
+  }
+  #add-person-btn {
+    background-color: #007bff;
+    color: white;
+    width: 150px;
+    display: block;
+    margin: 0.5rem auto 1.5rem auto;
+  }
+  #add-person-btn:hover {
+    background-color: #0056b3;
+  }
+  #calendar {
+    max-width: 1000px;
+    margin: 0 auto;
+    box-shadow: 0 4px 15px rgb(0 0 0 / 0.1);
+    border-radius: 10px;
+    background: white;
+    padding: 0.5rem;
+  }
+  
+  /* Fixed popup positioning - Use fixed instead of absolute to prevent layout shifts */
+  #person-popover {
+    position: fixed;
+    background: white;
+    border: 1px solid #ccc;
+    padding: 1rem;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+    display: none;
+    z-index: 1001;
+    border-radius: 6px;
+    min-width: 230px;
+    max-width: 280px;
+    box-sizing: border-box;
+  }
+  
+  #person-popover strong {
+    display: block;
+    margin-bottom: 0.7rem;
+    color: #007bff;
+  }
+  #person-popover button {
+    display: block;
+    width: 100%;
+    margin: 0.3rem 0;
+    padding: 0.4rem 0;
+    border-radius: 5px;
+    border: none;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+  }
+  #person-popover button.btn-add {
+    background-color: #28a745;
+    color: white;
+  }
+  #person-popover button.btn-remove {
+    background-color: #dc3545;
+    color: white;
+  }
+  #person-popover button.btn-add:hover {
+    background-color: #218838;
+  }
+  #person-popover button.btn-remove:hover {
+    background-color: #b02a37;
+  }
+
+  /* Auth Message */
+  .auth-message-main {
+    text-align: center; 
+    color: #6c757d; 
+    padding: 2rem;
+    display: none;
+  }
+
+  /* Responsive Mobile Fixes */
+  @media (max-width: 768px) {
+    body {
+      padding: 0.5rem;
+      /* Prevent body from shifting on mobile */
+      position: relative;
+    }
+    .container {
+      padding: 1rem;
+      /* Prevent container overflow */
+      width: calc(100% - 1rem);
+      margin: 0;
+    }
+    .hamburger-menu {
+      top: 0.5rem;
+      right: 0.5rem;
+    }
+    .menu-dropdown {
+      min-width: 200px;
+      /* Prevent menu from going off-screen */
+      max-width: calc(100vw - 2rem);
+      right: -0.5rem;
+    }
+    #calendar {
+      max-width: 100%;
+      padding: 0.25rem;
+      /* Prevent calendar from causing horizontal scroll */
+      overflow-x: auto;
+    }
+    ul {
+      max-width: 100%;
+    }
+    #add-person-btn {
+      width: 100%;
+    }
+    #import-section {
+      flex-direction: column;
+      gap: 0.8rem;
+      align-items: center;
+    }
+    .legend {
+      justify-content: center;
+    }
+    
+    /* Mobile popup positioning - center on screen */
+    #person-popover {
+      left: 50% !important;
+      top: 50% !important;
+      transform: translate(-50%, -50%) !important;
+      max-width: calc(100vw - 2rem);
+      min-width: calc(100vw - 4rem);
+    }
+  }
+  
+  /* Extra small screens */
+  @media (max-width: 480px) {
+    .container {
+      padding: 0.5rem;
+      width: calc(100% - 1rem);
+    }
+    
+    .menu-dropdown {
+      min-width: calc(100vw - 2rem);
+      right: -1rem;
+    }
+  }
+  
+  .weekend-day {
+    background-color: #e9ecef !important;
+    border: 1px solid #ccc !important;
+  }
+
+  .no-vacation-day {
+    background-color: #ffebee !important;
+    cursor: not-allowed !important;
+  }
+
+  /* Disabled state for protected content */
+  .content-disabled {
+    opacity: 0.5;
+    pointer-events: none;
+  }
+</style>
+</head>
+<body>
+
+<!-- Hamburger Menu -->
+<div class="hamburger-menu">
+  <button class="hamburger-btn" onclick="toggleMenu()">
+    <i class="fas fa-bars"></i>
+  </button>
+  <div class="menu-dropdown" id="menuDropdown">
+    <div id="menu-auth-section">
+      <input id="menu-email-input" type="email" placeholder="Email" style="width: 100%; margin-bottom: 0.5rem;" />
+      <input id="menu-password-input" type="password" placeholder="Passwort" style="width: 100%; margin-bottom: 0.5rem;" />
+      <button id="menu-login-btn" class="menu-item primary">Login</button>
+      <button id="menu-logout-btn" class="menu-item danger" style="display:none;">Logout</button>
+      <div id="menu-auth-message" style="color:red; font-size:0.8rem; margin-top:0.5rem;"></div>
+    </div>
+    <hr>
+    <a href="todo.html" class="menu-item">
+      <i class="fas fa-tasks"></i> Zur To-Do Liste
+    </a>
+  </div>
+</div>
+
+<div class="container"> 
+<center><h1>Urlaubskalender</h1>
+
+<div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
+  <a href="mailto:vigliotti1@outlook.de?subject=Urlaubskalender&body=Hallo,%20kannst%20du%20mir%20bitte%20Login%20Daten%20erstellen%3F" 
+     title="Login erstellen, durch eine kleine Spende" 
+     style="text-decoration: none; color: #0066cc; display: inline-flex; align-items: center;">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/4/4e/Mail_%28iOS%29.svg" alt="Mail" width="20" height="20" style="margin-right: 8px;">
+    vigliotti1@outlook.de
+  </a>
+</div>
+
+<div aria-label="Legende" class="legend">
+  <div class="legend-item"><span class="color-box" style="background:#007bff;"></span> Urlaub</div>
+  <div class="legend-item"><span class="color-box" style="background:#dc3545;"></span> Feiertag</div>
+  <div class="legend-item"><span class="color-box" style="background:#fd7e14;"></span> Ferien</div>
+  <div class="legend-item"><span class="color-box" style="background:#e9ecef; border: 1px solid #ccc;"></span> Wochenende</div>
+</div>
+
+<div id="import-section">
+<div id="delete-buttons" style="display:flex; gap:1rem; justify-content:center; margin-bottom:1rem;">
+  <button id="delete-ferien-btn" style="background:#fd7e14; color:white; padding:0.4rem 1rem; border:none; border-radius:4px; font-weight:600; cursor:pointer;">
+    Alle Ferien löschen (Jahr)
+  </button>
+  <button id="delete-feiertage-btn" style="background:#dc3545; color:white; padding:0.4rem 1rem; border:none; border-radius:4px; font-weight:600; cursor:pointer;">
+    Alle Feiertage löschen (Jahr)
+  </button>
+  
+  <button id="export-csv-btn" style="background:#28a745; color:white; padding:0.4rem 1rem; border:none; border-radius:4px; font-weight:600; cursor:pointer;">
+    Exportiere Urlaub/Ferien/Feiertage als CSV
+  </button>
+</div>
+
+  <label>
+    Feiertage importieren (.ics):
+    <input accept=".ics" id="import-feiertage" type="file"/>
+  </label>
+  <label>
+    Ferien importieren (.ics):
+    <input accept=".ics" id="import-ferien" type="file"/>
+  </label>
+</div>
+
+<div id="main-content">
+  <h3>Personen</h3>
+  <ul aria-live="polite" id="person-list"></ul>
+  <button aria-label="Person hinzufügen" id="add-person-btn">Person hinzufügen</button>
+  <h3>Resturlaub</h3>
+  <ul aria-live="polite" id="resturlaub-list"></ul>
+
+  <div style="text-align:center; margin-bottom: 1rem;">
+    <label for="year-selector" style="font-weight:600; margin-right:0.5rem;">Jahr wählen:</label>
+    <select id="year-selector" style="font-size:1rem; padding:0.3rem 0.6rem;"></select>
+  </div>
+  <div aria-label="Urlaubskalender" id="calendar"></div>
+</div>
+
+<!-- Auth Message (for main content area) -->
+<div id="auth-message-main" class="auth-message-main">
+  Bitte melden Sie sich an, um Ihre Urlaubsdaten zu verwalten.
+</div>
+
+<div aria-modal="true" id="person-popover" role="dialog"></div>
+</div>
+
+<!-- FullCalendar -->
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
+
+<!-- Firebase SDK -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-auth.js";
+import { getDatabase, ref, set, get, child, onValue, update } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-database.js";
+
+// Firebase Configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyAjF0SlQ_wZlGYBIBlL2aVQdvO1kcgi0Us",
+  authDomain: "projekt1-12e20.firebaseapp.com",
+  databaseURL: "https://projekt1-12e20-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "projekt1-12e20",
+  storageBucket: "projekt1-12e20.firebasestorage.app",
+  messagingSenderId: "175090852891",
+  appId: "1:175090852891:web:80b730564b1fd00dcd84be"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getDatabase(app);
+
+// Global Variables
+let currentUser = null;
+let dbPath = '';
+let persons = [];
+let resturlaub = {};
+let urlaubEvents = [];
+let feiertageEvents = [];
+let ferienEvents = [];
+
+// DOM-Elemente
+const calendarEl = document.getElementById('calendar');
+const personPopover = document.getElementById('person-popover');
+const personListEl = document.getElementById('person-list');
+const resturlaubListEl = document.getElementById('resturlaub-list');
+const addPersonBtn = document.getElementById('add-person-btn');
+const mainContent = document.getElementById('main-content');
+const authMessageMain = document.getElementById('auth-message-main');
+
+// Hamburger Menu Functions
+window.toggleMenu = function() {
+  const dropdown = document.getElementById('menuDropdown');
+  dropdown.classList.toggle('show');
+};
+
+// Close menu when clicking outside
+document.addEventListener('click', function(event) {
+  const menu = document.querySelector('.hamburger-menu');
+  if (!menu.contains(event.target)) {
+    document.getElementById('menuDropdown').classList.remove('show');
+  }
+});
+
+// Authentication Functions
+const menuLoginBtn = document.getElementById('menu-login-btn');
+const menuLogoutBtn = document.getElementById('menu-logout-btn');
+const menuEmailInput = document.getElementById('menu-email-input');
+const menuPasswordInput = document.getElementById('menu-password-input');
+const menuAuthMessage = document.getElementById('menu-auth-message');
+
+menuLoginBtn.onclick = () => {
+  const email = menuEmailInput.value.trim();
+  const password = menuPasswordInput.value;
+  
+  if (!email || !password) {
+    showAuthMessage('Bitte E-Mail und Passwort eingeben');
+    return;
+  }
+
+  signInWithEmailAndPassword(auth, email, password)
+    .then(userCredential => {
+      const uid = userCredential.user.uid;
+      get(child(ref(db), `personZuordnung/${uid}`)).then(snapshot => {
+        if (!snapshot.exists()) {
+          showAuthMessage('Keine Datenbank-Zuordnung vorhanden!');
+          return;
+        }
+        dbPath = snapshot.val();
+        currentUser = userCredential.user;
+        updateAuthUI(true);
+        loadData();
+        document.getElementById('menuDropdown').classList.remove('show');
+      });
+    })
+    .catch(error => {
+      showAuthMessage('Login fehlgeschlagen: ' + error.message);
+    });
+};
+
+menuLogoutBtn.onclick = () => {
+  signOut(auth).then(() => {
+    currentUser = null;
+    dbPath = '';
+    updateAuthUI(false);
+    resetData();
+    document.getElementById('menuDropdown').classList.remove('show');
+  });
+};
+
+function showAuthMessage(message) {
+  menuAuthMessage.textContent = message;
+  setTimeout(() => {
+    menuAuthMessage.textContent = '';
+  }, 4000);
+}
+
+function updateAuthUI(isLoggedIn) {
+  if (isLoggedIn) {
+    menuEmailInput.style.display = 'none';
+    menuPasswordInput.style.display = 'none';
+    menuLoginBtn.style.display = 'none';
+    menuLogoutBtn.style.display = 'block';
+    mainContent.classList.remove('content-disabled');
+    authMessageMain.style.display = 'none';
+  } else {
+    menuEmailInput.style.display = 'block';
+    menuPasswordInput.style.display = 'block';
+    menuLoginBtn.style.display = 'block';
+    menuLogoutBtn.style.display = 'none';
+    mainContent.classList.add('content-disabled');
+    authMessageMain.style.display = 'block';
+  }
+}
+
+function resetData() {
+  persons = [];
+  resturlaub = {};
+  urlaubEvents = [];
+  feiertageEvents = [];
+  ferienEvents = [];
+  renderPersons();
+  renderResturlaub();
+  renderCalendarEvents();
+}
+
+// Auth state observer
+auth.onAuthStateChanged(user => {
+  if (user) {
+    get(child(ref(db), `personZuordnung/${user.uid}`)).then(snapshot => {
+      if (snapshot.exists()) {
+        currentUser = user;
+        dbPath = snapshot.val();
+        updateAuthUI(true);
+        loadData();
+      } else {
+        showAuthMessage('Keine Datenbank-Zuordnung vorhanden!');
+        updateAuthUI(false);
+      }
+    });
+  } else {
+    currentUser = null;
+    dbPath = '';
+    updateAuthUI(false);
+    resetData();
+  }
+});
+
+// FullCalendar initialisieren (warten bis DOM geladen ist)
+let calendar;
+
+function initializeCalendar() {
+  if (!window.FullCalendar) {
+    console.error('FullCalendar not loaded');
+    return;
+  }
+  
+  calendar = new FullCalendar.Calendar(calendarEl, {
+  initialView: 'dayGridMonth',
+  locale: 'de',
+  selectable: true,
+  height: 'auto',
+  dateClick: info => {
+    if (!currentUser) return;
+    
+    const dateStr = info.dateStr;
+    const isWeekend = new Date(dateStr).getDay() === 0 || new Date(dateStr).getDay() === 6;
+    const isHolidayDate = isHoliday(dateStr);
+    
+    console.log('Date clicked:', dateStr, 'Weekend:', isWeekend, 'Holiday:', isHolidayDate);
+    
+    if (isWeekend) {
+      alert('An Wochenenden kann kein Urlaub eingetragen werden.');
+      return;
+    }
+    
+    if (isHolidayDate) {
+      alert('An Feiertagen kann kein Urlaub eingetragen werden.');
+      return;
+    }
+    
+    openPersonPopover(dateStr, info.dayEl);
+  },
+  eventDisplay: 'block',
+  dayCellClassNames: function(arg) {
+    const day = arg.date.getDay();
+    const dateStr = arg.date.toISOString().split('T')[0];
+    
+    if (day === 0 || day === 6) {
+      return ['weekend-day'];
+    }
+    
+    // Check if it's a holiday
+    if (isHoliday(dateStr)) {
+      return ['no-vacation-day'];
+    }
+    
+    return [];
+  }
+  });
+  
+  calendar.render();
+  console.log('Calendar initialized');
+}
+
+// Check if date is weekend or holiday
+function isWeekendOrHoliday(dateStr) {
+  const date = new Date(dateStr);
+  const day = date.getDay();
+  
+  // Weekend check
+  if (day === 0 || day === 6) return true;
+  
+  // Holiday check
+  return isHoliday(dateStr);
+}
+
+function isHoliday(dateStr) {
+  return feiertageEvents.some(event => {
+    const eventStart = event.start.replace(/-/g, '');
+    const checkDate = dateStr.replace(/-/g, '');
+    return eventStart === checkDate;
+  });
+}
+
+// Fixed popup handling to prevent rapid opening/closing
+let popupTimeout = null;
+
+function openPersonPopover(dateStr, dayEl) {
+  if (popupTimeout) {
+    clearTimeout(popupTimeout);
+  }
+  
+  // Close any existing popup first
+  personPopover.style.display = 'none';
+  
+  popupTimeout = setTimeout(() => {
+    showPersonPopover(dateStr, dayEl);
+  }, 150); // Small delay to prevent rapid toggling
+}
+
+function showPersonPopover(dateStr, dayEl) {
+  const weekday = new Date(dateStr).getDay();
+  const isWeekend = (weekday === 0 || weekday === 6);
+  const isHolidayDate = isHoliday(dateStr);
+
+  // Clear content
+  personPopover.innerHTML = '';
+
+  if (isWeekend) {
+    personPopover.innerHTML = '<strong>Wochenende - kein Urlaub möglich</strong>';
+    positionPopover(dayEl);
+    personPopover.style.display = 'block';
+    return;
+  }
+  if (isHolidayDate) {
+    personPopover.innerHTML = '<strong>Feiertag - Urlaubseinträge sind nicht erlaubt</strong>';
+    positionPopover(dayEl);
+    personPopover.style.display = 'block';
+    return;
+  }
+
+  const title = document.createElement('strong');
+  title.textContent = `Urlaub am ${dateStr}`;
+  personPopover.appendChild(title);
+
+  persons.forEach(p => {
+    const hasVacation = urlaubEvents.some(ev => ev.person === p && ev.start === dateStr);
+
+    const btn = document.createElement('button');
+    btn.textContent = hasVacation ? `Urlaub entfernen: ${p}` : `Urlaub hinzufügen: ${p}`;
+    btn.className = hasVacation ? 'btn-remove' : 'btn-add';
+
+    btn.onclick = () => {
+      // Check, ob Datum Feiertag ist
+      if (isDateInEvents(dateStr, feiertageEvents)) {
+        alert('An Feiertagen kann kein Urlaub eingetragen werden!');
+        return;
+      }
+
+      // Resturlaub Plausibilität: bei Urlaub plus, bei Urlaub löschen minus
+      if (hasVacation) {
+        urlaubEvents = urlaubEvents.filter(ev => !(ev.person === p && ev.start === dateStr));
+        resturlaub[p] = (resturlaub[p] ?? 30) + 1; // Urlaub zurückgeben
+      } else {
+        if ((resturlaub[p] ?? 30) <= 0) {
+          alert(`${p} hat keinen Resturlaub mehr!`);
+          return;
+        }
+        urlaubEvents.push({ person: p, start: dateStr });
+        resturlaub[p] = (resturlaub[p] ?? 30) - 1; // Resturlaub reduzieren
+      }
+
+      saveData();
+      renderResturlaub();
+      renderCalendarEvents();
+      showPersonPopover(dateStr, dayEl); // Popup neu laden
+    };
+
+    personPopover.appendChild(btn);
+  });
+
+  // Position popup and show
+  positionPopover(dayEl);
+  personPopover.style.display = 'block';
+}
+
+function positionPopover(dayEl) {
+  const isMobile = window.innerWidth <= 768;
+  
+  if (isMobile) {
+    // Center on mobile
+    personPopover.style.position = 'fixed';
+    personPopover.style.left = '50%';
+    personPopover.style.top = '50%';
+    personPopover.style.transform = 'translate(-50%, -50%)';
+  } else {
+    // Position near clicked element on desktop
+    const rect = dayEl.getBoundingClientRect();
+    const popoverWidth = 280;
+    const popoverHeight = 200;
+    
+    let left = rect.left + rect.width / 2 - popoverWidth / 2;
+    let top = rect.bottom + 10;
+    
+    // Adjust if popup would go off-screen
+    if (left < 10) left = 10;
+    if (left + popoverWidth > window.innerWidth - 10) {
+      left = window.innerWidth - popoverWidth - 10;
+    }
+    if (top + popoverHeight > window.innerHeight - 10) {
+      top = rect.top - popoverHeight - 10;
+    }
+    
+    personPopover.style.position = 'fixed';
+    personPopover.style.left = `${left}px`;
+    personPopover.style.top = `${top}px`;
+    personPopover.style.transform = 'none';
+  }
+}
+
+function closePersonPopover() {
+  personPopover.style.display = 'none';
+  if (popupTimeout) {
+    clearTimeout(popupTimeout);
+    popupTimeout = null;
+  }
+}
+
+// Close popup when clicking outside
+document.addEventListener('click', function(event) {
+  if (personPopover.style.display === 'block' && 
+      !personPopover.contains(event.target) && 
+      !event.target.closest('.fc-daygrid-day')) {
+    closePersonPopover();
+  }
+});
+
+// Daten laden
+function loadData() {
+  if (!currentUser || !dbPath) return;
+
+  // Personen laden
+  const personsRef = ref(db, `urlaubskalender/${dbPath}/persons`);
+  onValue(personsRef, (snapshot) => {
+    persons = snapshot.val() || [];
+    renderPersons();
+  });
+
+  // Resturlaub laden
+  const resturlaubRef = ref(db, `urlaubskalender/${dbPath}/resturlaub`);
+  onValue(resturlaubRef, (snapshot) => {
+    resturlaub = snapshot.val() || {};
+    renderResturlaub();
+  });
+
+  // Urlaub-Events laden
+  const urlaubRef = ref(db, `urlaubskalender/${dbPath}/urlaubEvents`);
+  onValue(urlaubRef, (snapshot) => {
+    urlaubEvents = snapshot.val() || [];
+    renderCalendarEvents();
+  });
+
+  // Feiertage-Events laden
+  const feiertageRef = ref(db, `urlaubskalender/${dbPath}/feiertageEvents`);
+  onValue(feiertageRef, (snapshot) => {
+    feiertageEvents = snapshot.val() || [];
+    renderCalendarEvents();
+  });
+
+  // Ferien-Events laden
+  const ferienRef = ref(db, `urlaubskalender/${dbPath}/ferienEvents`);
+  onValue(ferienRef, (snapshot) => {
+    ferienEvents = snapshot.val() || [];
+    renderCalendarEvents();
+  });
+}
+
+// Person hinzufügen
+addPersonBtn.onclick = () => {
+  if (!currentUser) return;
+  
+  const name = prompt('Name der neuen Person:');
+  if (!name) return;
+  if (persons.includes(name.trim())) {
+    alert('Person existiert bereits.');
+    return;
+  }
+  persons.push(name.trim());
+  resturlaub[name.trim()] = 30; // Standard Resturlaub
+  saveData();
+  renderPersons();
+  renderResturlaub();
+};
+
+// Daten speichern
+function saveData() {
+  if (!currentUser || !dbPath) return;
+  
+  set(ref(db, `urlaubskalender/${dbPath}/persons`), persons);
+  set(ref(db, `urlaubskalender/${dbPath}/resturlaub`), resturlaub);
+  set(ref(db, `urlaubskalender/${dbPath}/urlaubEvents`), urlaubEvents);
+}
+
+// Personen rendern
+function renderPersons() {
+  personListEl.innerHTML = '';
+  persons.forEach(p => {
+    const li = document.createElement('li');
+    const span = document.createElement('span');
+    span.textContent = p;
+    li.appendChild(span);
+
+    const delBtn = document.createElement('button');
+    delBtn.textContent = 'Entfernen';
+    delBtn.classList.add('delete-btn');
+    delBtn.onclick = () => {
+      if (confirm(`Person "${p}" wirklich entfernen?`)) {
+        persons = persons.filter(x => x !== p);
+        delete resturlaub[p];
+        urlaubEvents = urlaubEvents.filter(ev => ev.person !== p);
+        saveData();
+        renderPersons();
+        renderResturlaub();
+        renderCalendarEvents();
+      }
+    };
+    li.appendChild(delBtn);
+    personListEl.appendChild(li);
+  });
+}
+
+// Resturlaub rendern
+function renderResturlaub() {
+  resturlaubListEl.innerHTML = '';
+  persons.forEach(p => {
+    const li = document.createElement('li');
+    li.textContent = `${p}: `;
+
+    const input = document.createElement('input');
+    input.type = 'number';
+    input.min = 0;
+    input.value = resturlaub[p] ?? 30;
+    input.style.width = '50px';
+    input.onchange = () => {
+      const val = parseInt(input.value, 10);
+      if (isNaN(val) || val < 0) {
+        input.value = resturlaub[p];
+        alert('Bitte eine gültige Zahl >= 0 eingeben');
+        return;
+      }
+      resturlaub[p] = val;
+      saveData();
+    };
+
+    li.appendChild(input);
+    resturlaubListEl.appendChild(li);
+  });
+}
+
+// Kalender-Events rendern
+function renderCalendarEvents() {
+  if (!calendar) return;
+  
+  calendar.removeAllEvents();
+  
+  // Urlaub-Events
+  urlaubEvents.forEach(event => {
+    calendar.addEvent({
+      title: `${event.person} - Urlaub`,
+      start: event.start,
+      backgroundColor: '#007bff',
+      borderColor: '#007bff'
+    });
+  });
+  
+  // Feiertage-Events
+  feiertageEvents.forEach(event => {
+    calendar.addEvent({
+      title: event.summary,
+      start: event.start,
+      end: event.end,
+      backgroundColor: '#dc3545',
+      borderColor: '#dc3545'
+    });
+  });
+  
+  // Ferien-Events
+  ferienEvents.forEach(event => {
+    calendar.addEvent({
+      title: event.summary,
+      start: event.start,
+      end: event.end,
+      backgroundColor: '#fd7e14',
+      borderColor: '#fd7e14'
+    });
+  });
+}
+
+// Hilfsfunktion für Datumsprüfung
+function isDateInEvents(dateStr, events) {
+  return events.some(ev => ev.start === dateStr);
+}
+
+// Jahr-Selector
+const yearSelector = document.getElementById('year-selector');
+const currentYear = new Date().getFullYear();
+for (let i = currentYear - 2; i <= currentYear + 2; i++) {
+  const option = document.createElement('option');
+  option.value = i;
+  option.textContent = i;
+  if (i === currentYear) option.selected = true;
+  yearSelector.appendChild(option);
+}
+
+yearSelector.onchange = () => {
+  const selectedYear = parseInt(yearSelector.value);
+  calendar.gotoDate(new Date(selectedYear, 0, 1));
+};
+
+// File Import Handlers
+document.getElementById('import-feiertage').onchange = (e) => importICS(e, 'feiertage');
+document.getElementById('import-ferien').onchange = (e) => importICS(e, 'ferien');
+
+function importICS(event, type) {
+  if (!currentUser) return;
+  
+  const file = event.target.files[0];
+  if (!file) return;
+  
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const content = e.target.result;
+    const events = parseICS(content);
+    
+    if (type === 'feiertage') {
+      set(ref(db, `urlaubskalender/${dbPath}/feiertageEvents`), events);
+    } else if (type === 'ferien') {
+      set(ref(db, `urlaubskalender/${dbPath}/ferienEvents`), events);
+    }
+    
+    alert(`${events.length} ${type} importiert!`);
+  };
+  reader.readAsText(file);
+}
+
+function parseICS(content) {
+  const events = [];
+  const lines = content.split('\n');
+  let currentEvent = null;
+  
+  lines.forEach(line => {
+    line = line.trim();
+    
+    if (line === 'BEGIN:VEVENT') {
+      currentEvent = {};
+    } else if (line === 'END:VEVENT' && currentEvent) {
+      if (currentEvent.start && currentEvent.summary) {
+        events.push(currentEvent);
+      }
+      currentEvent = null;
+    } else if (currentEvent) {
+      if (line.startsWith('SUMMARY:')) {
+        currentEvent.summary = line.substring(8);
+      } else if (line.startsWith('DTSTART')) {
+        const dateMatch = line.match(/(\d{8})/);
+        if (dateMatch) {
+          const dateStr = dateMatch[1];
+          currentEvent.start = `${dateStr.substring(0,4)}-${dateStr.substring(4,6)}-${dateStr.substring(6,8)}`;
+        }
+      } else if (line.startsWith('DTEND')) {
+        const dateMatch = line.match(/(\d{8})/);
+        if (dateMatch) {
+          const dateStr = dateMatch[1];
+          currentEvent.end = `${dateStr.substring(0,4)}-${dateStr.substring(4,6)}-${dateStr.substring(6,8)}`;
+        }
+      }
+    }
+  });
+  
+  return events;
+}
+
+// Delete functions
+document.getElementById('delete-feiertage-btn').onclick = () => {
+  if (!currentUser) return;
+  
+  if (confirm('Alle Feiertage für das aktuelle Jahr löschen?')) {
+    const currentYear = calendar.getDate().getFullYear();
+    const filteredEvents = feiertageEvents.filter(event => 
+      !event.start.startsWith(currentYear.toString())
+    );
+    set(ref(db, `urlaubskalender/${dbPath}/feiertageEvents`), filteredEvents);
+  }
+};
+
+document.getElementById('delete-ferien-btn').onclick = () => {
+  if (!currentUser) return;
+  
+  if (confirm('Alle Ferien für das aktuelle Jahr löschen?')) {
+    const currentYear = calendar.getDate().getFullYear();
+    const filteredEvents = ferienEvents.filter(event => 
+      !event.start.startsWith(currentYear.toString())
+    );
+    set(ref(db, `urlaubskalender/${dbPath}/ferienEvents`), filteredEvents);
+  }
+};
+
+// CSV Export
+document.getElementById('export-csv-btn').onclick = () => {
+  if (!currentUser) return;
+  
+  const currentYear = calendar.getDate().getFullYear();
+  let csvContent = 'Typ,Person,Datum,Titel\n';
+  
+  // Urlaub
+  urlaubEvents.forEach(event => {
+    if (event.start.startsWith(currentYear.toString())) {
+      csvContent += `Urlaub,${event.person},${event.start},${event.person} - Urlaub\n`;
+    }
+  });
+  
+  // Feiertage
+  feiertageEvents.forEach(event => {
+    if (event.start.startsWith(currentYear.toString())) {
+      csvContent += `Feiertag,,${event.start},${event.summary}\n`;
+    }
+  });
+  
+  // Ferien
+  ferienEvents.forEach(event => {
+    if (event.start.startsWith(currentYear.toString())) {
+      csvContent += `Ferien,,${event.start},${event.summary}\n`;
+    }
+  });
+  
+  const blob = new Blob([csvContent], { type: 'text/csv' });
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `urlaubskalender_${currentYear}.csv`;
+  a.click();
+  window.URL.revokeObjectURL(url);
+};
+
+// Initialize when DOM is loaded
+document.addEventListener('DOMContentLoaded', () => {
+  // Wait a bit for FullCalendar to load
+  setTimeout(initializeCalendar, 100);
+});
+
+// Also initialize if FullCalendar is already loaded
+if (window.FullCalendar) {
+  initializeCalendar();
+}
+
+</script>
+</body>
+</html>
