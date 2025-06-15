@@ -107,14 +107,18 @@
     gap: 1rem;
     margin-bottom: 1.5rem;
   }
-  .legend-item {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-weight: 600;
-    font-size: 0.95rem;
-    color: #444;
-  }
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: #444;
+  width: fit-content;
+  margin: 0 auto;
+}
+
+
   .color-box {
     width: 24px; height: 24px;
     border-radius: 4px;
@@ -339,7 +343,7 @@
       <div id="menu-auth-message" style="color:red; font-size:0.8rem; margin-top:0.5rem;"></div>
     </div>
     <hr>
-    <a href="https://urlaubskalender.github.io/todo/" class="menu-item">
+    <a href="todo.html" class="menu-item">
       <i class="fas fa-tasks"></i> Zur To-Do Liste
     </a>
   </div>
@@ -394,6 +398,10 @@
   <button aria-label="Person hinzufügen" id="add-person-btn">Person hinzufügen</button>
   <h3>Resturlaub</h3>
   <ul aria-live="polite" id="resturlaub-list"></ul>
+
+<h3>Nächster Urlaub</h3>
+<ul aria-live="polite" id="next-vacation-list"></ul>
+
 
   <div style="text-align:center; margin-bottom: 1rem;">
     <label for="year-selector" style="font-weight:600; margin-right:0.5rem;">Jahr wählen:</label>
@@ -546,7 +554,9 @@ function resetData() {
   ferienEvents = [];
   renderPersons();
   renderResturlaub();
+  renderNextVacations();
   renderCalendarEvents();
+  renderNextVacations();
 }
 
 // Auth state observer
@@ -718,7 +728,9 @@ function showPersonPopover(dateStr, dayEl) {
 
       saveData();
       renderResturlaub();
+  renderNextVacations();
       renderCalendarEvents();
+  renderNextVacations();
       showPersonPopover(dateStr, dayEl); // Popup neu laden
     };
 
@@ -797,6 +809,7 @@ function loadData() {
   onValue(resturlaubRef, (snapshot) => {
     resturlaub = snapshot.val() || {};
     renderResturlaub();
+  renderNextVacations();
   });
 
   // Urlaub-Events laden
@@ -804,6 +817,7 @@ function loadData() {
   onValue(urlaubRef, (snapshot) => {
     urlaubEvents = snapshot.val() || [];
     renderCalendarEvents();
+  renderNextVacations();
   });
 
   // Feiertage-Events laden
@@ -811,6 +825,7 @@ function loadData() {
   onValue(feiertageRef, (snapshot) => {
     feiertageEvents = snapshot.val() || [];
     renderCalendarEvents();
+  renderNextVacations();
   });
 
   // Ferien-Events laden
@@ -818,6 +833,7 @@ function loadData() {
   onValue(ferienRef, (snapshot) => {
     ferienEvents = snapshot.val() || [];
     renderCalendarEvents();
+  renderNextVacations();
   });
 }
 
@@ -836,6 +852,7 @@ addPersonBtn.onclick = () => {
   saveData();
   renderPersons();
   renderResturlaub();
+  renderNextVacations();
 };
 
 // Daten speichern
@@ -867,7 +884,9 @@ function renderPersons() {
         saveData();
         renderPersons();
         renderResturlaub();
+  renderNextVacations();
         renderCalendarEvents();
+  renderNextVacations();
       }
     };
     li.appendChild(delBtn);
@@ -902,6 +921,34 @@ function renderResturlaub() {
     resturlaubListEl.appendChild(li);
   });
 }
+
+
+function renderNextVacations() {
+  const list = document.getElementById('next-vacation-list');
+  if (!list) return;
+
+  list.innerHTML = '';
+  const today = new Date().toISOString().split('T')[0];
+
+  persons.forEach(person => {
+    const futureVacations = urlaubEvents
+      .filter(ev => ev.person === person && ev.start >= today)
+      .sort((a, b) => a.start.localeCompare(b.start));
+
+    const li = document.createElement('li');
+
+    if (futureVacations.length > 0) {
+      const nextDate = futureVacations[0].start;
+      const daysLeft = Math.ceil((new Date(nextDate) - new Date(today)) / (1000 * 60 * 60 * 24));
+      li.textContent = `${person}: in ${daysLeft} Tag${daysLeft === 1 ? '' : 'en'} (${nextDate})`;
+    } else {
+      li.textContent = `${person}: kein geplanter Urlaub`;
+    }
+
+    list.appendChild(li);
+  });
+}
+
 
 // Kalender-Events rendern
 function renderCalendarEvents() {
