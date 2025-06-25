@@ -124,6 +124,17 @@
     border-radius: 4px;
     box-shadow: 0 0 4px rgba(0, 0, 0, 0.1);
   }
+  
+  /* Person color indicator */
+  .person-color-indicator {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 8px;
+    border: 1px solid #ddd;
+  }
+  
   #import-section {
     display: flex;
     gap: 1.5rem;
@@ -310,6 +321,36 @@
     }
   }
   
+  /* Current Day Highlighting */
+  .fc-day-today {
+    background-color: #ffeaa7 !important;
+    border: 3px solid #fdcb6e !important;
+    position: relative;
+  }
+  
+  .fc-day-today::before {
+    content: '';
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    width: 8px;
+    height: 8px;
+    background: #e17055;
+    border-radius: 50%;
+    box-shadow: 0 0 6px rgba(225, 112, 85, 0.6);
+  }
+  
+  /* Ensure current day highlighting works with other states */
+  .fc-day-today.weekend-day {
+    background-color: #f0e68c !important;
+    border: 3px solid #daa520 !important;
+  }
+  
+  .fc-day-today.no-vacation-day {
+    background-color: #ffcdd2 !important;
+    border: 3px solid #f44336 !important;
+  }
+
   .weekend-day {
     background-color: #e9ecef !important;
     border: 1px solid #ccc !important;
@@ -324,6 +365,20 @@
   .content-disabled {
     opacity: 0.5;
     pointer-events: none;
+  }
+
+  #resturlaub-overview {
+    list-style: none;
+    padding-left: 0;
+    margin-bottom: 1.5rem;
+  }
+  #resturlaub-overview li {
+    color: #888;
+    background: #f1f1f1;
+    padding: 0.4rem 0.8rem;
+    margin-bottom: 0.3rem;
+    border-radius: 4px;
+    font-weight: 500;
   }
 </style>
 </head>
@@ -340,71 +395,103 @@
       <input id="menu-password-input" type="password" placeholder="Passwort" style="width: 100%; margin-bottom: 0.5rem;" />
       <button id="menu-login-btn" class="menu-item primary">Login</button>
       <button id="menu-logout-btn" class="menu-item danger" style="display:none;">Logout</button>
+      
+      
+  <button id="menu-change-password-btn" class="menu-item">
+  <i class="fas fa-key"></i> Passwort ändern
+</button>    
+      
+      
       <div id="menu-auth-message" style="color:red; font-size:0.8rem; margin-top:0.5rem;"></div>
     </div>
-    <hr>
+    
+<hr>
+
+<details>
+  <summary style="font-weight:bold; cursor:pointer;">👤 Personen verwalten</summary>
+  <ul id="person-list"></ul>
+  <button id="add-person-btn" style="margin-top: 0.5rem;">Person hinzufügen</button>
+</details>
+
+<details>
+  <summary style="font-weight:bold; cursor:pointer;">📅 Resturlaub bearbeiten</summary>
+  <ul id="resturlaub-list"></ul>
+</details>
+
+<hr>
+
     <a href="https://urlaubskalender.github.io/todo/" class="menu-item">
       <i class="fas fa-tasks"></i> Zur To-Do Liste
     </a>
     
-    
-    <a href="https://urlaubskalender.github.io/Einkaufsliste/" class="menu-item">
+    <a href="https://urlaubskalender.github.io/todo/" class="menu-item">
       <i class="fas fa-tasks"></i> Zur Einkaufsliste
     </a>
     
+<a href="https://urlaubskalender.github.io/Geburtstagskalender/" class="menu-item">
+      <i class="fas fa-tasks"></i> Zur Geburtstagskalender
+    </a>    
     
-  </div>
+    
+    
+    
+<hr>
+<button id="delete-ferien-btn" class="menu-item danger">
+  <i class="fas fa-trash-alt"></i> Alle Ferien löschen (Jahr)
+</button>
+<button id="delete-feiertage-btn" class="menu-item danger">
+  <i class="fas fa-trash-alt"></i> Alle Feiertage löschen (Jahr)
+</button>
+
+<hr>
+<button id="export-csv-btn" class="menu-item">
+  <i class="fas fa-file-export"></i> Urlaub/Ferien/Feiertage als CSV
+</button>
+
+<label class="menu-item" style="cursor: pointer;">
+  <i class="fas fa-file-import"></i> Feiertage importieren (.ics)
+  <input accept=".ics" id="import-feiertage" type="file" style="display: none;" />
+</label>
+
+<label class="menu-item" style="cursor: pointer;">
+  <i class="fas fa-file-import"></i> Ferien importieren (.ics)
+  <input accept=".ics" id="import-ferien" type="file" style="display: none;" />
+</label>
+
+<hr>
+</div>
 </div>
 
 <div class="container"> 
 <center><h1>Urlaubskalender</h1>
 
 <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
-  <a href="mailto:vigliotti1@outlook.de?subject=Urlaubskalender&body=Hallo,%20kannst%20du%20mir%20bitte%20Login%20Daten%20erstellen%3F" 
-     title="Login erstellen, durch eine kleine Spende" 
-     style="text-decoration: none; color: #0066cc; display: inline-flex; align-items: center;">
-    <img src="https://upload.wikimedia.org/wikipedia/commons/4/4e/Mail_%28iOS%29.svg" alt="Mail" width="20" height="20" style="margin-right: 8px;">
-    vigliotti1@outlook.de
-  </a>
+ 
 </div>
 
 <div aria-label="Legende" class="legend">
-  <div class="legend-item"><span class="color-box" style="background:#007bff;"></span> Urlaub</div>
+
   <div class="legend-item"><span class="color-box" style="background:#dc3545;"></span> Feiertag</div>
   <div class="legend-item"><span class="color-box" style="background:#fd7e14;"></span> Ferien</div>
   <div class="legend-item"><span class="color-box" style="background:#e9ecef; border: 1px solid #ccc;"></span> Wochenende</div>
+  <div class="legend-item"><span class="color-box" style="background:#ffeaa7; border: 3px solid #fdcb6e;"></span> Heute</div>
+
+<div id="auth-message-main" class="auth-message-main">
+  Bitte melden Sie sich an, um Ihre Urlaubsdaten zu verwalten. Kein Login? kein Problem. Schreibt mir eine email, um eine kleine Spende wurde ich mich freuen. <a href="mailto:vigliotti1@outlook.de">Kontakt</a></p>
+</div>
+
 </div>
 
 <div id="import-section">
 <div id="delete-buttons" style="display:flex; gap:1rem; justify-content:center; margin-bottom:1rem;">
-  <button id="delete-ferien-btn" style="background:#fd7e14; color:white; padding:0.4rem 1rem; border:none; border-radius:4px; font-weight:600; cursor:pointer;">
-    Alle Ferien löschen (Jahr)
-  </button>
-  <button id="delete-feiertage-btn" style="background:#dc3545; color:white; padding:0.4rem 1rem; border:none; border-radius:4px; font-weight:600; cursor:pointer;">
-    Alle Feiertage löschen (Jahr)
-  </button>
-  
-  <button id="export-csv-btn" style="background:#28a745; color:white; padding:0.4rem 1rem; border:none; border-radius:4px; font-weight:600; cursor:pointer;">
-    Exportiere Urlaub/Ferien/Feiertage als CSV
-  </button>
-</div>
+  </div>
 
-  <label>
-    Feiertage importieren (.ics):
-    <input accept=".ics" id="import-feiertage" type="file"/>
-  </label>
-  <label>
-    Ferien importieren (.ics):
-    <input accept=".ics" id="import-ferien" type="file"/>
-  </label>
-</div>
+  </div>
 
 <div id="main-content">
-  <h3>Personen</h3>
-  <ul aria-live="polite" id="person-list"></ul>
-  <button aria-label="Person hinzufügen" id="add-person-btn">Person hinzufügen</button>
-  <h3>Resturlaub</h3>
-  <ul aria-live="polite" id="resturlaub-list"></ul>
+  
+  <h5 style="color:#555; font-size:1rem;">Aktueller Resturlaub</h5>
+  <ul id="resturlaub-overview"></ul>
 
 <h3>Nächster Urlaub</h3>
 <ul aria-live="polite" id="next-vacation-list"></ul>
@@ -418,9 +505,7 @@
 </div>
 
 <!-- Auth Message (for main content area) -->
-<div id="auth-message-main" class="auth-message-main">
-  Bitte melden Sie sich an, um Ihre Urlaubsdaten zu verwalten.
-</div>
+
 
 <div aria-modal="true" id="person-popover" role="dialog"></div>
 </div>
@@ -433,6 +518,10 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-app.js";
 import { getAuth, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-auth.js";
 import { getDatabase, ref, set, get, child, onValue, update } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-database.js";
+
+
+
+import { sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-auth.js";
 
 // Firebase Configuration
 const firebaseConfig = {
@@ -459,6 +548,19 @@ let urlaubEvents = [];
 let feiertageEvents = [];
 let ferienEvents = [];
 
+// Color palette for persons
+const PERSON_COLORS = [
+  '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', 
+  '#DDA0DD', '#F39C12', '#9B59B6', '#1ABC9C', '#E74C3C'
+];
+
+// Function to get color for a person
+function getPersonColor(personName) {
+  const personIndex = persons.findIndex(p => p === personName);
+  if (personIndex === -1) return '#007bff';
+  return PERSON_COLORS[personIndex % PERSON_COLORS.length];
+}
+
 // DOM-Elemente
 const calendarEl = document.getElementById('calendar');
 const personPopover = document.getElementById('person-popover');
@@ -467,6 +569,27 @@ const resturlaubListEl = document.getElementById('resturlaub-list');
 const addPersonBtn = document.getElementById('add-person-btn');
 const mainContent = document.getElementById('main-content');
 const authMessageMain = document.getElementById('auth-message-main');
+
+
+document.getElementById('menu-change-password-btn').addEventListener('click', () => {
+  if (!currentUser || !currentUser.email) {
+    alert('Sie müssen eingeloggt sein, um das Passwort zu ändern.');
+    return;
+  }
+
+  const confirmed = confirm(`Soll ein Link zum Zurücksetzen des Passworts an ${currentUser.email} gesendet werden?`);
+  if (!confirmed) return;
+
+  sendPasswordResetEmail(auth, currentUser.email)
+    .then(() => {
+      alert('Ein Link zum Zurücksetzen des Passworts wurde gesendet.');
+      document.getElementById('menuDropdown').classList.remove('show');
+    })
+    .catch((error) => {
+      alert('Fehler beim Senden des Links: ' + error.message);
+    });
+});
+
 
 // Hamburger Menu Functions
 window.toggleMenu = function() {
@@ -561,9 +684,9 @@ function resetData() {
   ferienEvents = [];
   renderPersons();
   renderResturlaub();
+  renderResturlaubOverview();
   renderNextVacations();
   renderCalendarEvents();
-  renderNextVacations();
 }
 
 // Auth state observer
@@ -708,9 +831,10 @@ function showPersonPopover(dateStr, dayEl) {
 
   persons.forEach(p => {
     const hasVacation = urlaubEvents.some(ev => ev.person === p && ev.start === dateStr);
+    const personColor = getPersonColor(p);
 
     const btn = document.createElement('button');
-    btn.textContent = hasVacation ? `Urlaub entfernen: ${p}` : `Urlaub hinzufügen: ${p}`;
+    btn.innerHTML = `<span class="person-color-indicator" style="background-color: ${personColor};"></span>${hasVacation ? `Urlaub entfernen: ${p}` : `Urlaub hinzufügen: ${p}`}`;
     btn.className = hasVacation ? 'btn-remove' : 'btn-add';
 
     btn.onclick = () => {
@@ -735,9 +859,9 @@ function showPersonPopover(dateStr, dayEl) {
 
       saveData();
       renderResturlaub();
-  renderNextVacations();
+      renderResturlaubOverview();
+      renderNextVacations();
       renderCalendarEvents();
-  renderNextVacations();
       showPersonPopover(dateStr, dayEl); // Popup neu laden
     };
 
@@ -816,7 +940,8 @@ function loadData() {
   onValue(resturlaubRef, (snapshot) => {
     resturlaub = snapshot.val() || {};
     renderResturlaub();
-  renderNextVacations();
+    renderResturlaubOverview();
+    renderNextVacations();
   });
 
   // Urlaub-Events laden
@@ -824,7 +949,7 @@ function loadData() {
   onValue(urlaubRef, (snapshot) => {
     urlaubEvents = snapshot.val() || [];
     renderCalendarEvents();
-  renderNextVacations();
+    renderNextVacations();
   });
 
   // Feiertage-Events laden
@@ -832,7 +957,7 @@ function loadData() {
   onValue(feiertageRef, (snapshot) => {
     feiertageEvents = snapshot.val() || [];
     renderCalendarEvents();
-  renderNextVacations();
+    renderNextVacations();
   });
 
   // Ferien-Events laden
@@ -840,7 +965,7 @@ function loadData() {
   onValue(ferienRef, (snapshot) => {
     ferienEvents = snapshot.val() || [];
     renderCalendarEvents();
-  renderNextVacations();
+    renderNextVacations();
   });
 }
 
@@ -859,6 +984,7 @@ addPersonBtn.onclick = () => {
   saveData();
   renderPersons();
   renderResturlaub();
+  renderResturlaubOverview();
   renderNextVacations();
 };
 
@@ -869,6 +995,7 @@ function saveData() {
   set(ref(db, `urlaubskalender/${dbPath}/persons`), persons);
   set(ref(db, `urlaubskalender/${dbPath}/resturlaub`), resturlaub);
   set(ref(db, `urlaubskalender/${dbPath}/urlaubEvents`), urlaubEvents);
+  renderResturlaubOverview();
 }
 
 // Personen rendern
@@ -877,7 +1004,8 @@ function renderPersons() {
   persons.forEach(p => {
     const li = document.createElement('li');
     const span = document.createElement('span');
-    span.textContent = p;
+    const personColor = getPersonColor(p);
+    span.innerHTML = `<span class="person-color-indicator" style="background-color: ${personColor};"></span>${p}`;
     li.appendChild(span);
 
     const delBtn = document.createElement('button');
@@ -891,9 +1019,9 @@ function renderPersons() {
         saveData();
         renderPersons();
         renderResturlaub();
-  renderNextVacations();
+        renderResturlaubOverview();
+        renderNextVacations();
         renderCalendarEvents();
-  renderNextVacations();
       }
     };
     li.appendChild(delBtn);
@@ -906,7 +1034,8 @@ function renderResturlaub() {
   resturlaubListEl.innerHTML = '';
   persons.forEach(p => {
     const li = document.createElement('li');
-    li.textContent = `${p}: `;
+    const personColor = getPersonColor(p);
+    li.innerHTML = `<span class="person-color-indicator" style="background-color: ${personColor};"></span>${p}: `;
 
     const input = document.createElement('input');
     input.type = 'number';
@@ -929,6 +1058,17 @@ function renderResturlaub() {
   });
 }
 
+function renderResturlaubOverview() {
+  const overviewList = document.getElementById('resturlaub-overview');
+  if (!overviewList) return;
+  overviewList.innerHTML = '';
+  persons.forEach(p => {
+    const li = document.createElement('li');
+    const personColor = getPersonColor(p);
+    li.innerHTML = `<span class="person-color-indicator" style="background-color: ${personColor};"></span>${p}: ${resturlaub[p] ?? 30} Tage`;
+    overviewList.appendChild(li);
+  });
+}
 
 function renderNextVacations() {
   const list = document.getElementById('next-vacation-list');
@@ -943,19 +1083,19 @@ function renderNextVacations() {
       .sort((a, b) => a.start.localeCompare(b.start));
 
     const li = document.createElement('li');
+    const personColor = getPersonColor(person);
 
     if (futureVacations.length > 0) {
       const nextDate = futureVacations[0].start;
       const daysLeft = Math.ceil((new Date(nextDate) - new Date(today)) / (1000 * 60 * 60 * 24));
-      li.textContent = `${person}: in ${daysLeft} Tag${daysLeft === 1 ? '' : 'en'} (${nextDate})`;
+      li.innerHTML = `<span class="person-color-indicator" style="background-color: ${personColor};"></span>${person}: in ${daysLeft} Tag${daysLeft === 1 ? '' : 'en'} (${nextDate})`;
     } else {
-      li.textContent = `${person}: kein geplanter Urlaub`;
+      li.innerHTML = `<span class="person-color-indicator" style="background-color: ${personColor};"></span>${person}: kein geplanter Urlaub`;
     }
 
     list.appendChild(li);
   });
 }
-
 
 // Kalender-Events rendern
 function renderCalendarEvents() {
@@ -965,11 +1105,12 @@ function renderCalendarEvents() {
   
   // Urlaub-Events
   urlaubEvents.forEach(event => {
+    const personColor = getPersonColor(event.person);
     calendar.addEvent({
       title: `${event.person} - Urlaub`,
       start: event.start,
-      backgroundColor: '#007bff',
-      borderColor: '#007bff'
+      backgroundColor: personColor,
+      borderColor: personColor
     });
   });
   
