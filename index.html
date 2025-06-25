@@ -1164,23 +1164,38 @@ document.getElementById('import-ferien').onchange = (e) => importICS(e, 'ferien'
 
 function importICS(event, type) {
   if (!currentUser) return;
-  
+
   const file = event.target.files[0];
   if (!file) return;
-  
+
   const reader = new FileReader();
   reader.onload = (e) => {
     const content = e.target.result;
     const events = parseICS(content);
-    
-    if (type === 'feiertage') {
-      set(ref(db, `urlaubskalender/${dbPath}/feiertageEvents`), events);
-    } else if (type === 'ferien') {
-      set(ref(db, `urlaubskalender/${dbPath}/ferienEvents`), events);
+
+    if (events.length === 0) {
+      alert("Keine gültigen Events in der Datei gefunden.");
+      return;
     }
-    
-    alert(`${events.length} ${type} importiert!`);
+
+    const path = `urlaubskalender/${dbPath}/${type}Events`;
+    set(ref(db, path), events)
+      .then(() => {
+        // Lokale Variable aktualisieren
+        if (type === 'feiertage') {
+          feiertageEvents = events;
+        } else if (type === 'ferien') {
+          ferienEvents = events;
+        }
+
+        renderCalendarEvents();
+        alert(`${events.length} ${type} importiert!`);
+      })
+      .catch((error) => {
+        alert(`Fehler beim Importieren: ${error.message}`);
+      });
   };
+
   reader.readAsText(file);
 }
 
